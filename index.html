@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>패턴 분석 로또 생성기</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f8f9fa; }
+        .container { text-align: center; background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 400px; }
+        h1 { font-size: 1.5rem; color: #333; margin-bottom: 0.5rem; }
+        p { font-size: 0.9rem; color: #666; margin-bottom: 2rem; }
+        .lotto-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; padding: 10px; background: #fafafa; border-radius: 10px; }
+        .ball { width: 38px; height: 38px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; font-size: 0.9rem; }
+        .color-1 { background: #fbc400; } .color-2 { background: #69c8f2; } .color-3 { background: #ff7272; } .color-4 { background: #aaa; } .color-5 { background: #b0d840; }
+        button { width: 100%; padding: 15px; font-size: 1.1rem; background-color: #007bff; color: white; border: none; border-radius: 12px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        .info { font-size: 0.75rem; color: #999; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧬 분석형 로또 추천</h1>
+    <p>홀짝 비율 및 합계 범위 필터 적용</p>
+    <div id="result-area"></div>
+    <button onclick="generateSmartGames()">번호 생성 (5게임)</button>
+    <p class="info">* 통계적 균형을 맞춘 번호이며, 당첨을 보장하지 않습니다.</p>
+</div>
+
+<script>
+    function generateSmartGames() {
+        const resultArea = document.getElementById('result-area');
+        resultArea.innerHTML = '';
+
+        for (let i = 0; i < 5; i++) {
+            let game;
+            // 유효한 패턴이 나올 때까지 반복 생성 (필터링)
+            do {
+                game = getRandomNumbers();
+            } while (!isValidPattern(game));
+
+            renderGame(game);
+        }
+    }
+
+    // 1. 기본 번호 추출 (중복 없음)
+    function getRandomNumbers() {
+        const set = new Set();
+        while (set.size < 6) {
+            set.add(Math.floor(Math.random() * 45) + 1);
+        }
+        return [...set].sort((a, b) => a - b);
+    }
+
+    // 2. 당첨 데이터 기반 필터링 (핵심 로직)
+    function isValidPattern(nums) {
+        // 합계 분석 (보통 100~170 사이가 70% 이상)
+        const sum = nums.reduce((a, b) => a + b, 0);
+        if (sum < 100 || sum > 170) return false;
+
+        // 홀짝 비율 분석 (3:3, 2:4, 4:2 선호)
+        const odds = nums.filter(n => n % 2 !== 0).length;
+        if (odds < 2 || odds > 4) return false;
+
+        // 연속 번호 체크 (3개 이상 연속이면 탈락)
+        for (let i = 0; i < nums.length - 2; i++) {
+            if (nums[i] + 1 === nums[i+1] && nums[i+1] + 1 === nums[i+2]) return false;
+        }
+
+        return true;
+    }
+
+    function renderGame(nums) {
+        const row = document.createElement('div');
+        row.className = 'lotto-row';
+        nums.forEach(num => {
+            const ball = document.createElement('div');
+            ball.className = `ball ${getColorClass(num)}`;
+            ball.innerText = num;
+            row.appendChild(ball);
+        });
+        document.getElementById('result-area').appendChild(row);
+    }
+
+    function getColorClass(num) {
+        if (num <= 10) return 'color-1';
+        if (num <= 20) return 'color-2';
+        if (num <= 30) return 'color-3';
+        if (num <= 40) return 'color-4';
+        return 'color-5';
+    }
+</script>
+
+</body>
+</html>
